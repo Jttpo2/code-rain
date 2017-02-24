@@ -33,9 +33,18 @@ function Symbol(x, y, speed, isShiner, alpha) {
 	this.alpha = alpha;
 
 	this.setToRandomSymbol = function() {
-		this.value = String.fromCharCode(
-			0x30A0 + round(random(0,96))
-			);
+		// Randomly select from Katanaka symbols and integers 0-9
+		let noOfKatakanaSymbols = 96;
+		let arabianIntegers = 10;
+		let randomIndex = round(random(0, noOfKatakanaSymbols + arabianIntegers));
+		let charCode;
+		if (randomIndex <= noOfKatakanaSymbols) {
+			charCode = 0x30A0 + randomIndex;
+		} else {
+			charCode = 0x0030 + (randomIndex - noOfKatakanaSymbols);
+		}
+		
+		this.value = String.fromCharCode(charCode);
 	}
 
 	this.render = function() {
@@ -117,7 +126,6 @@ function StreamHandler() {
 	this.render = function() {
 		this.streams.forEach(function(stream) {
 			if (stream.isGoneFromView()) {
-				console.log('gone ' + stream.symbols[0].x);
 				stream.generateSymbols(
 					stream.symbols[0].x, 
 					random(streamMinStartPositionY, 0)
