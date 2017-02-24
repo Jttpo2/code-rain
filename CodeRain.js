@@ -1,4 +1,4 @@
-var symbolSize = 20;
+var symbolSize = 13;
 var streams = [];
 
 function setup() {
@@ -30,13 +30,14 @@ function draw() {
 	
 }
 
-function Symbol(x, y, speed, first) {
+function Symbol(x, y, speed, isShiner, alpha) {
 	this.x = x;
 	this.y = y;
 	this.value;
 	this.speed = speed;
 	this.switchInterval = round(random(2, 20));
-	this.first = first;
+	this.isShiner = isShiner;
+	this.alpha = alpha;
 
 	this.setToRandomSymbol = function() {
 		this.value = String.fromCharCode(
@@ -46,38 +47,41 @@ function Symbol(x, y, speed, first) {
 	}
 
 	this.render = function() {
-		if (this.first) {
+		if (this.isShiner) {
 			fill(190, 255, 190);
 		} else {
-			fill(0, 255, 70);	
+			fill(0, 255, 70, this.alpha);	
 		}
 		
 		text(this.value, this.x, this.y);
 		this.rain();
 		if (frameCount % this.switchInterval == 0) {
-			this.setToRandomSymbol();	
+			this.setToRandomSymbol();
+			this.switchInterval = round(random(2, 20));	
 		}
 	}
 
 	this.rain = function() {
-		this.y = (this.y >= height) ? 0 : this.y += this.speed;
+		this.y = (this.y >= height*1.5) ? 0 : this.y += this.speed;
 
 	}
 }
 
 function Stream() {
 	this.symbols = [];
-	this.totalSymbols = round(random(5, 30));
+	this.totalSymbols = round(random(5, 40));
 	this.speed = random(5, 20);
 
 	this.generateSymbols = function(x, y) {
-		let first = round(random(0, 4)) == 1;
+		let isShiner = round(random(0, 4)) == 1;
 		for (var i=0; i<=this.totalSymbols; i++) {
-			symbol = new Symbol(x, y, this.speed, first);
+			// Fade with position in stream
+			let alpha = map(i, 0, this.totalSymbols, 255, 90);
+			symbol = new Symbol(x, y, this.speed, isShiner, alpha);
 			symbol.setToRandomSymbol();
 			this.symbols.push(symbol);
 			y -= symbolSize;
-			first = false;
+			isShiner = false;
 		}
 	}
 
