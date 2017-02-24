@@ -1,4 +1,4 @@
-var symbolSize = 30;
+var symbolSize = 20;
 var streams = [];
 
 function setup() {
@@ -8,10 +8,13 @@ function setup() {
 	background(0);
 
 
-	var x = 0, y = 0;
+	let x = 0;
 	for (var i=0; i<=width/symbolSize; i++) {
 		stream = new Stream();
-		stream.generateSymbols(x, y);	
+		stream.generateSymbols(
+			x, 
+			random(-1000, 0)
+			);	
 		streams.push(stream);
 		x += symbolSize;
 	}
@@ -20,19 +23,20 @@ function setup() {
 }
 
 function draw() {
-	background(0);
+	background(0, 150);
 	streams.forEach(function(stream) {
 		stream.render();	
 	});
 	
 }
 
-function Symbol(x, y, speed) {
+function Symbol(x, y, speed, first) {
 	this.x = x;
 	this.y = y;
 	this.value;
 	this.speed = speed;
 	this.switchInterval = round(random(2, 20));
+	this.first = first;
 
 	this.setToRandomSymbol = function() {
 		this.value = String.fromCharCode(
@@ -42,7 +46,12 @@ function Symbol(x, y, speed) {
 	}
 
 	this.render = function() {
-		fill(0, 255, 70);
+		if (this.first) {
+			fill(190, 255, 190);
+		} else {
+			fill(0, 255, 70);	
+		}
+		
 		text(this.value, this.x, this.y);
 		this.rain();
 		if (frameCount % this.switchInterval == 0) {
@@ -62,14 +71,13 @@ function Stream() {
 	this.speed = random(5, 20);
 
 	this.generateSymbols = function(x, y) {
-		// var y = 0;
-		// var x = width/2;
-
+		let first = round(random(0, 4)) == 1;
 		for (var i=0; i<=this.totalSymbols; i++) {
-			symbol = new Symbol(x, y, this.speed);
+			symbol = new Symbol(x, y, this.speed, first);
 			symbol.setToRandomSymbol();
 			this.symbols.push(symbol);
 			y -= symbolSize;
+			first = false;
 		}
 	}
 
