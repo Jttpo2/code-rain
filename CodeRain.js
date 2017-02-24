@@ -1,4 +1,6 @@
 var symbolSize = 13;
+var symbolDistanceX = -2;
+var symbolDistanceY = 5;
 var streamMinStartPositionY = -1000;
 
 var streamHandler;
@@ -38,7 +40,7 @@ function Symbol(x, y, speed, isShiner, alpha) {
 
 	this.render = function() {
 		if (this.isShiner) {
-			fill(190, 255, 190);
+			fill(170, 255, 170);
 		} else {
 			fill(0, 255, 70, this.alpha);	
 		}
@@ -60,19 +62,26 @@ function Symbol(x, y, speed, isShiner, alpha) {
 
 function Stream() {
 	this.symbols = [];
-	this.totalSymbols = round(random(5, 40));
-	this.speed = random(5, 20);
+	this.totalSymbols;
+	this.speed;
+	this.maxAlpha;
+	this.minAlpha;
 
 	this.generateSymbols = function(x, y) {
 		this.symbols.length = 0;
+		this.totalSymbols = round(random(5, 40));
+		this.speed = random(5, 20);
+		this.maxAlpha = random(80, 250);
+		this.minAlpha = this.maxAlpha - 180;
+		
 		let isShiner = round(random(0, 4)) == 1;
 		for (var i=0; i<=this.totalSymbols; i++) {
 			// Fade with position in stream
-			let alpha = map(i, 0, this.totalSymbols, 180, 70);
+			let alpha = map(i, 0, this.totalSymbols, this.maxAlpha, this.minAlpha);
 			symbol = new Symbol(x, y, this.speed, isShiner, alpha);
 			symbol.setToRandomSymbol();
 			this.symbols.push(symbol);
-			y -= symbolSize;
+			y -= symbolSize + symbolDistanceY;
 			isShiner = false;
 		}
 	}
@@ -94,14 +103,14 @@ function StreamHandler() {
 	this.generateStreams = function() {
 		this.streams.length = 0;
 		let x = 0;
-		for (var i=0; i<=width/symbolSize; i++) {
+		for (var i=0; i<=width/(symbolSize + symbolDistanceX); i++) {
 			stream = new Stream();
 			stream.generateSymbols(
 				x, 
 				random(streamMinStartPositionY, 0)
 				);	
 			this.streams.push(stream);
-			x += symbolSize;
+			x += symbolSize + symbolDistanceX;
 		}
 	}
 
@@ -109,7 +118,10 @@ function StreamHandler() {
 		this.streams.forEach(function(stream) {
 			if (stream.isGoneFromView()) {
 				console.log('gone ' + stream.symbols[0].x);
-				stream.generateSymbols(stream.symbols[0].x, streamMinStartPositionY);
+				stream.generateSymbols(
+					stream.symbols[0].x, 
+					random(streamMinStartPositionY, 0)
+					);
 			}
 			stream.render();	
 		});
