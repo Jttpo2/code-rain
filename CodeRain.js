@@ -79,7 +79,8 @@ function Stream() {
 	this.generateSymbols = function(x, y) {
 		this.symbols.length = 0;
 		this.totalSymbols = round(random(5, 40));
-		this.speed = random(5, 20);
+		this.speed = round(randomGaussian(10, 2));
+		console.log(this.speed);
 		this.maxAlpha = random(80, 250);
 		this.minAlpha = this.maxAlpha - 180;
 		
