@@ -1,5 +1,5 @@
 var symbolSize = 30;
-var stream;
+var streams = [];
 
 function setup() {
 	createCanvas(
@@ -7,20 +7,24 @@ function setup() {
 		window.innerHeight);
 	background(0);
 
-	// symbol = new Symbol(
-	// 	width/2, 
-	// 	0,
-	// 	random(5, 10));
-	// symbol.setToRandomSymbol();
 
-	stream = new Stream();
-	stream.generateSymbols();
+	var x = 0, y = 0;
+	for (var i=0; i<=width/symbolSize; i++) {
+		stream = new Stream();
+		stream.generateSymbols(x, y);	
+		streams.push(stream);
+		x += symbolSize;
+	}
+
 	textSize(symbolSize);
 }
 
 function draw() {
 	background(0);
-	stream.render();
+	streams.forEach(function(stream) {
+		stream.render();	
+	});
+	
 }
 
 function Symbol(x, y, speed) {
@@ -57,9 +61,9 @@ function Stream() {
 	this.totalSymbols = round(random(5, 30));
 	this.speed = random(5, 20);
 
-	this.generateSymbols = function() {
-		var y = 0;
-		var x = width/2;
+	this.generateSymbols = function(x, y) {
+		// var y = 0;
+		// var x = width/2;
 
 		for (var i=0; i<=this.totalSymbols; i++) {
 			symbol = new Symbol(x, y, this.speed);
@@ -71,12 +75,7 @@ function Stream() {
 
 	this.render = function() {
 		this.symbols.forEach(function(symbol) {
-			 fill(0, 255, 70);
-			 text(symbol.value, symbol.x, symbol.y);
-			 symbol.rain();
-			 if (frameCount % symbol.switchInterval == 0) {
-			 	symbol.setToRandomSymbol();	
-			 }
+			 symbol.render();
 			});
 	}
 }
