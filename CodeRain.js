@@ -1,11 +1,14 @@
 var symbolSize = 13;
-var symbolDistanceX = -2;
+var symbolDistanceX = -3;
 var symbolDistanceY = 5;
-var streamMinStartPositionY = -1000;
+var streamMinStartPositionY = -1500;
+
+var gapChance = 0.5;
 
 var streamHandler;
 
 function setup() {
+	frameRate(15);
 	createCanvas(
 		window.innerWidth, 
 		window.innerHeight);
@@ -43,8 +46,17 @@ function Symbol(x, y, speed, isShiner, alpha) {
 		} else {
 			charCode = 0x0030 + (randomIndex - noOfKatakanaSymbols);
 		}
-		
+
 		this.value = String.fromCharCode(charCode);
+
+		// Introducing gaps in the code
+		this.gapChance = gapChance;
+		if (isShiner) {
+			this.gapChance /= 8;
+		}
+		if (random() < this.gapChance) {
+			this.value = " ";
+		}
 	}
 
 	this.render = function() {
@@ -64,31 +76,32 @@ function Symbol(x, y, speed, isShiner, alpha) {
 	}
 
 	this.rain = function() {
-		// this.y = (this.y >= height*1.5) ? 0 : this.y += this.speed;
 		this.y += this.speed;
 	}
 }
 
-function Stream() {
+function Stream(x) {
 	this.symbols = [];
+	this.xPos = x;
 	this.totalSymbols;
 	this.speed;
 	this.maxAlpha;
 	this.minAlpha;
+	this.endPointY;
 
-	this.generateSymbols = function(x, y) {
+	this.generateSymbols = function(y) {
 		this.symbols.length = 0;
 		this.totalSymbols = round(random(5, 40));
 		this.speed = round(randomGaussian(10, 2));
-		console.log(this.speed);
 		this.maxAlpha = random(80, 250);
 		this.minAlpha = this.maxAlpha - 180;
+		this.endPointY = this.getRandomEndPoint();
 		
 		let isShiner = round(random(0, 4)) == 1;
 		for (var i=0; i<=this.totalSymbols; i++) {
 			// Fade with position in stream
 			let alpha = map(i, 0, this.totalSymbols, this.maxAlpha, this.minAlpha);
-			symbol = new Symbol(x, y, this.speed, isShiner, alpha);
+			symbol = new Symbol(this.xPos, y, this.speed, isShiner, alpha);
 			symbol.setToRandomSymbol();
 			this.symbols.push(symbol);
 			y -= symbolSize + symbolDistanceY;
@@ -97,13 +110,31 @@ function Stream() {
 	}
 
 	this.render = function() {
+		this.removeSymbolsPastEndPoint();
+
 		this.symbols.forEach(function(symbol) {
 			 symbol.render();
 			});
 	}
 
 	this.isGoneFromView = function() {
-		return this.symbols[this.symbols.length-1].y > height;
+		return this.symbols.length <= 0;
+	}
+
+	this.removeSymbolsPastEndPoint = function() {
+		for (let i=this.symbols.length-1; i>=0; i--) {
+			if (this.symbols[i].y > this.endPointY || this.symbols[i].y > height) {
+				this.symbols.splice(i, 1);
+			}
+		}
+	}
+
+	this.getRandomEndPoint = function() {
+		if (random() < 0.4) {
+			return round(random(0, height));
+		} else {
+			return height;
+		}
 	}
 }
 
@@ -114,9 +145,8 @@ function StreamHandler() {
 		this.streams.length = 0;
 		let x = 0;
 		for (var i=0; i<=width/(symbolSize + symbolDistanceX); i++) {
-			stream = new Stream();
+			stream = new Stream(x);
 			stream.generateSymbols(
-				x, 
 				random(streamMinStartPositionY, 0)
 				);	
 			this.streams.push(stream);
@@ -128,7 +158,6 @@ function StreamHandler() {
 		this.streams.forEach(function(stream) {
 			if (stream.isGoneFromView()) {
 				stream.generateSymbols(
-					stream.symbols[0].x, 
 					random(streamMinStartPositionY, 0)
 					);
 			}
