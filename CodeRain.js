@@ -1,6 +1,6 @@
-var symbolSize = 13;
+var symbolSize = 12;
 var symbolDistanceX = -3;
-var symbolDistanceY = 5;
+var symbolDistanceY = symbolSize/3;
 var streamMinStartPositionY = -1500;
 
 var gapChance = 0.5;
